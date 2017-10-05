@@ -62,7 +62,7 @@ class douban extends douban_config {
   * @return int state (0-not valid, 1-valid)
   */
   function urlstate () {
-    if (strlen($this->doubanID) != 7) return 0;
+    if (strlen($this->doubanID) < 7) return 0;
     else return 1;
   }
 
@@ -72,7 +72,7 @@ class douban extends douban_config {
   * @return int state (0-not complete, 1-cache complete, 2-cache not enabled, 3-not valid imdb url)
   */
   function cachestate ($target = "") {
-    if (strlen($this->doubanID) != 7) {
+    if (strlen($this->doubanID) < 7) {
       //echo "Invalid doubanID: ".$this->doubanID."<BR>".strlen($this->doubanID);
       $this->page[$wt] = "cannot open page";
       return 3;
@@ -80,8 +80,8 @@ class douban extends douban_config {
     if ($this->usecache) {
       $ext_arr =	$this->extension;
       foreach($ext_arr as $ext) {
-        if(!file_exists($this->cachedir."/".$this->doubanID.$ext)) return 0;
-        @$fp = fopen($this->cachedir."/".$this->doubanID.$ext, "r");
+        if(!file_exists($this->cachedir."/".$this->doubanID.".".$ext)) return 0;
+        @$fp = fopen($this->cachedir."/".$this->doubanID.".".$ext, "r");
         if (!$fp) return 0;
       }
       return 1;
@@ -107,71 +107,72 @@ class douban extends douban_config {
   * @param string wt
   */
   function openpage ($wt) {
-    if (strlen($this->doubanID) != 7) {
+    if (strlen($this->doubanID) < 7) {
       echo "Invalid doubanID: ".$this->doubanID."<BR>".strlen($this->doubanID);
       $this->page[$wt] = "cannot open page";
       return;
     }
-    switch ($wt) {
-      //case "Title"	 : $urlname="/"; return FALSE;
-      // case "Credits" : $urlname="/fullcredits"; return FALSE;
-      //case "Plot"		: $urlname="/plotsummary"; return FALSE;
-      //case "Taglines": $urlname="/taglines"; return FALSE;
-      case "Title"	 : $urlname=""; return FALSE;
-      //case "Credits" : $urlname=""; return FALSE;
-      //case "Plot"		: $urlname=""; return FALSE;
-      // case "Taglines": $urlname=""; return FALSE;
-    }
-    if ($this->usecache) {
-      @$fp = fopen ($this->cachedir."/".$this->doubanID.$wt, "r");
-      if ($fp) {
-        $temp="";
-        while (!feof ($fp)) {
-          $temp .= fread ($fp, 1024);
-        }
-        if ($temp) {
-          $this->page[$wt] = $temp;
-          return;
-        }
-      }
-    } // end cache
-
-    // $req = new DOUBAN_Request("");
-    // $req->setURL($this->main_url()."?apikey=".$this->apikey);
-    // $response = $req->send();
-
-
-
-
-    $url = $this->main_url();//url为当前Douban完整连接
-    $curl = curl_init();//初始化一个CURL会话，cURL库可以简单和有效地去抓网页
-    curl_setopt($curl, CURLOPT_URL,$url);//为CURL会话设置参数，CURLOPT_URL为$url
-    curl_setopt($curl, CURLOPT_HEADER, 0);//CURLOPT_HEADER$url
-    curl_setopt($curl, CURLOPT_NOBODY, 0);//CURLOPT_NOBODY$url
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);//CURLOPT_RETURNTRANSFER$url
-    curl_setopt($curl, CURLOPT_TIMEOUT,10);//CURLOPT_TIMEOUT$url
-    $data = curl_exec($curl);//执行CURL会话
-    curl_close($curl);//关闭CURL会话
-
-    $this->page[$wt] = $data;
-
     /*
-    if ($responseBody) {
-    // $this->page[$wt] = utf8_encode($responseBody);
-    //$this->page[$wt] = iconv ("gb2312","UTF-8",$responseBody);
-  }
-  */
-
-  if($this->page[$wt]) {//如果成功获取到网页
-    if ($this->storecache) {
-      $fp = fopen ($this->cachedir."/".$this->doubanID.$wt, "w");//以写入方式打开文件
-      fputs ($fp, $this->page[$wt]);//写入文件
-      fclose ($fp);//关闭打开的文件
+    switch ($wt) {
+    //case "Title"	 : $urlname="/"; return FALSE;
+    // case "Credits" : $urlname="/fullcredits"; return FALSE;
+    //case "Plot"		: $urlname="/plotsummary"; return FALSE;
+    //case "Taglines": $urlname="/taglines"; return FALSE;
+    case "Title"	 : $urlname=""; return FALSE;
+    //case "Credits" : $urlname=""; return FALSE;
+    //case "Plot"		: $urlname=""; return FALSE;
+    // case "Taglines": $urlname=""; return FALSE;
+  }*/
+  if ($this->usecache) {
+    @$fp = fopen ($this->cachedir."/".$this->doubanID.".".$wt, "r");
+    if ($fp) {
+      $temp="";
+      while (!feof ($fp)) {
+        $temp .= fread ($fp, 1024);
+      }
+      if ($temp) {
+        $this->page[$wt] = $temp;
+        return;
+      }
     }
-    return;
+  } // end cache
+
+  // $req = new DOUBAN_Request("");
+  // $req->setURL($this->main_url()."?apikey=".$this->apikey);
+  // $response = $req->send();
+
+
+
+
+  $url = $this->main_url();//url为当前Douban完整连接
+  $curl = curl_init();//初始化一个CURL会话，cURL库可以简单和有效地去抓网页
+  curl_setopt($curl, CURLOPT_URL,$url);//为CURL会话设置参数，CURLOPT_URL为$url
+  curl_setopt($curl, CURLOPT_HEADER, 0);//CURLOPT_HEADER$url
+  curl_setopt($curl, CURLOPT_NOBODY, 0);//CURLOPT_NOBODY$url
+  curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);//CURLOPT_RETURNTRANSFER$url
+  curl_setopt($curl, CURLOPT_TIMEOUT,10);//CURLOPT_TIMEOUT$url
+  $data = curl_exec($curl);//执行CURL会话
+  curl_close($curl);//关闭CURL会话
+
+  $this->page[$wt] = $data;
+
+  /*
+  if ($responseBody) {
+  // $this->page[$wt] = utf8_encode($responseBody);
+  //$this->page[$wt] = iconv ("gb2312","UTF-8",$responseBody);
+}
+*/
+
+if($this->page[$wt]) {//如果成功获取到网页
+  if ($this->storecache) {
+    $fp = fopen ($this->cachedir."/".$this->doubanID.".".$wt, "w");//以写入方式打开文件
+    fputs ($fp, $this->page[$wt]);//写入文件
+    fclose ($fp);//关闭打开的文件
   }
-  $this->page[$wt] = "cannot open page";
-  //echo "page not found";
+  return;
+}
+$this->page[$wt] = "cannot open page";
+//echo "page not found";
 }
 
 /** Retrieve the Douban ID
@@ -205,18 +206,18 @@ function setid ($id) {
   $this->main_title = "";
   $this->main_original_title = "";
   $this->main_aka = "";
-  $this->main_akas = "";
+  $this->main_akas = array();
   $this->main_year = "";
   $this->main_director = "";
-  $this->main_directors = "";
+  $this->main_directors = array();
   $this->main_cast = "";
-  $this->main_casts = "";
+  $this->main_casts = array();
   $this->main_rating = "";
   $this->main_votes = "";
   $this->main_genre = "";
-  $this->main_genres = "";
+  $this->main_genres = array();
   $this->main_country = "";
-  $this->main_countries = "";
+  $this->main_countries = array();
   $this->main_image = "";
   $this->main_summary = "";
   $this->main_doubanlink = "";
@@ -228,7 +229,7 @@ function setid ($id) {
 * @constructor douban
 * @param string id
 */
-function douabn ($id) {
+function douban($id) {
   $this->douban_config();
   $this->setid($id);
   //if ($this->storecache && ($this->cache_expire > 0)) $this->purge();
@@ -297,7 +298,7 @@ function getcachetime() {
 * @return string url
 */
 function main_url(){
-  return $this->protocol_prefix.$this->doubansite."/".$this->doubanid()."/";
+  return $this->protocol_prefix.$this->doubansite."/".$this->doubanid();
 }
 
 /** Get title
@@ -341,27 +342,36 @@ function original_title() {
 */
 function aka() {
   if ($this->main_aka == "") {
-    if ($this->main_akas == "" || count($this->main_akas) <= 0) {
-      $this->openpage("Title");
-      $data = json_decode($this->page["Title"],true);
-      $jkey = "aka";
-      if (!array_key_exists($jkey, $data)) {
-        echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
-        return FALSE;
-      }
-      $akas_info = $data[$jkey];
-      $aka_count = count($akas_info);
-      foreach ($akas_info as $aka_info) {
-        if ($this->main_akas == "") $this->main_akas = array();
-        array_push($this->main_akas, $aka_info);
-      }
-    }
+    $this->akas();
     foreach ($this->main_akas as $aka_name) {
       if ($this->main_aka == "") $this->main_aka = $aka_name;
       else $this->main_aka = $this->main_aka." / ".$aka_name;
     }
   }
   return $this->main_aka;
+}
+
+/** Get movie akas
+* @method akas
+* @return string aka name array
+*/
+function akas() {
+  if ($this->main_akas == "" || count($this->main_akas) <= 0) {
+    $this->openpage("Title");
+    $data = json_decode($this->page["Title"],true);
+    $jkey = "aka";
+    if (!array_key_exists($jkey, $data)) {
+      echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
+      return FALSE;
+    }
+    $akas_info = $data[$jkey];
+    $aka_count = count($akas_info);
+    foreach ($akas_info as $aka_info) {
+      if ($this->main_akas == "") $this->main_akas = array();
+      array_push($this->main_akas, $aka_info);
+    }
+  }
+  return $this->main_akas;
 }
 
 /** Get public year
@@ -388,24 +398,7 @@ function year() {
 */
 function director() {
   if ($this->main_director == "") {
-    if ($this->main_directors == "" || count($this->main_directors) <= 0) {
-      $this->openpage("Title");
-      $data = json_decode($this->page["Title"],true);
-      $jkey = "directors";
-      if (!array_key_exists($jkey, $data)) {
-        echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
-        return FALSE;
-      }
-      $directors_info = $data[$jkey];
-      foreach ($directors_info as $director_info) {
-        if (!array_key_exists("name",$director_info)) {
-          echo "<br /> JSON Parser Error: json key 'name' does not exist in '".$jkey."' value. <br />";
-          return FALSE;
-        }
-        if ($this->main_directors == "") $this->main_directors = array();
-        array_push($this->main_directors, $director_info["name"]);
-      }
-    }
+    $this->directors();
     foreach ($this->main_directors as $director_name) {
       if ($this->main_director == "") $this->main_director = $director_name;
       else $this->main_director = $this->main_director." / ".$director_name;
@@ -414,36 +407,71 @@ function director() {
   return $this->main_director;
 }
 
-/** Get casts
+/** Get directors
+* @method directors
+* @return string director array
+*/
+function directors() {
+  if ($this->main_directors == "" || count($this->main_directors) <= 0) {
+    $this->openpage("Title");
+    $data = json_decode($this->page["Title"],true);
+    $jkey = "directors";
+    if (!array_key_exists($jkey, $data)) {
+      echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
+      return FALSE;
+    }
+    $directors_info = $data[$jkey];
+    foreach ($directors_info as $director_info) {
+      if (!array_key_exists("name",$director_info)) {
+        echo "<br /> JSON Parser Error: json key 'name' does not exist in '".$jkey."' value. <br />";
+        return FALSE;
+      }
+      if ($this->main_directors == "") $this->main_directors = array();
+      array_push($this->main_directors, $director_info["name"]);
+    }
+  }
+  return $this->main_directors;
+}
+
+/** Get cast
 * @method cast
 * @return string casts
 */
 function cast() {
   if ($this->main_cast == "") {
-    if ($this->main_casts == "" || count($this->main_casts) <= 0) {
-      $this->openpage("Title");
-      $data = json_decode($this->page["Title"],true);
-      $jkey = "casts";
-      if (!array_key_exists($jkey, $data)) {
-        echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
-        return FALSE;
-      }
-      $casts_info = $data[$jkey];
-      foreach ($casts_info as $cast_info) {
-        if (!array_key_exists("name",$cast_info)) {
-          echo "<br /> JSON Parser Error: json key 'name' does not exist in '".$jkey."' value. <br />";
-          return FALSE;
-        }
-        if ($this->main_casts == "") $this->main_casts = array();
-        array_push($this->main_casts, $cast_info["name"]);
-      }
-    }
+    $this->casts();
     foreach ($this->main_casts as $cast_name) {
-      if ($this->main_cast == "") $this->main_cats = $cast_name;
+      if ($this->main_cast == "") $this->main_cast = $cast_name;
       else $this->main_cast = $this->main_cast." / ".$cast_name;
     }
   }
   return $this->main_cast;
+}
+
+/** Get casts
+* @method casts
+* @return string cast array
+*/
+function casts() {
+  if ($this->main_casts == "" || count($this->main_casts) <= 0) {
+    $this->openpage("Title");
+    $data = json_decode($this->page["Title"],true);
+    $jkey = "casts";
+    if (!array_key_exists($jkey, $data)) {
+      echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
+      return FALSE;
+    }
+    $casts_info = $data[$jkey];
+    foreach ($casts_info as $cast_info) {
+      if (!array_key_exists("name",$cast_info)) {
+        echo "<br /> JSON Parser Error: json key 'name' does not exist in '".$jkey."' value. <br />";
+        return FALSE;
+      }
+      if ($this->main_casts == "") $this->main_casts = array();
+      array_push($this->main_casts, $cast_info["name"]);
+    }
+  }
+  return $this->main_casts;
 }
 
 /** Get rating
@@ -465,6 +493,8 @@ function rating() {
       return FALSE;
     }
     $this->main_rating = $rating_info["average"];
+    // format the rating to x.x
+    $this->main_rating = sprintf("%1.1f",$this->main_rating);
   }
   return $this->main_rating;
 }
@@ -487,26 +517,13 @@ function votes() {
   return $this->main_votes;
 }
 
-/** Get genres
+/** Get genre
 * @method genre
 * @return string genre
 */
 function genre() {
   if ($this->main_genre == "") {
-    if ($this->main_genres == "" || count($this->main_genres) <= 0) {
-      $this->openpage("Title");
-      $data = json_decode($this->page["Title"],true);
-      $jkey = "genres";
-      if (!array_key_exists($jkey, $data)) {
-        echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
-        return FALSE;
-      }
-      $genres_info = $data[$jkey];
-      foreach ($genres_info as $genre_info) {
-        if ($this->main_genres == "") $this->main_genres = array();
-        array_push($this->main_genres, $genre_info);
-      }
-    }
+    $this->genres();
     foreach ($this->main_genres as $genre_name) {
       if ($this->main_genre == "") $this->main_genre = $genre_name;
       else $this->main_genre = $this->main_genre." / ".$genre_name;
@@ -515,32 +532,63 @@ function genre() {
   return $this->main_genre;
 }
 
+/** Get genres
+* @method genres
+* @return string genre array
+*/
+function genres() {
+  if ($this->main_genres == "" || count($this->main_genres) <= 0) {
+    $this->openpage("Title");
+    $data = json_decode($this->page["Title"],true);
+    $jkey = "genres";
+    if (!array_key_exists($jkey, $data)) {
+      echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
+      return FALSE;
+    }
+    $genres_info = $data[$jkey];
+    foreach ($genres_info as $genre_info) {
+      if ($this->main_genres == "") $this->main_genres = array();
+      array_push($this->main_genres, $genre_info);
+    }
+  }
+  return $this->main_genres;
+}
+
 /** Get country
 * @method country
 * @return string country
 */
 function country() {
   if ($this->main_country == "") {
-    if ($this->main_countries == "" || count($this->main_countries) <= 0) {
-      $this->openpage("Title");
-      $data = json_decode($this->page["Title"],true);
-      $jkey = "countries";
-      if (!array_key_exists($jkey, $data)) {
-        echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
-        return FALSE;
-      }
-      $countries_info = $data[$jkey];
-      foreach ($countries_info as $country_info) {
-        if ($this->main_countries == "") $this->main_countries = array();
-        array_push($this->main_countries, $country_info);
-      }
-    }
+    $this->countries();
     foreach ($this->main_countries as $country_name) {
       if ($this->main_country == "") $this->main_country = $country_name;
       else $this->main_country = $this->main_country." / ".$country_name;
     }
   }
   return $this->main_country;
+}
+
+/** Get countries
+* @method countries
+* @return string country array
+*/
+function countries() {
+  if ($this->main_countries == "" || count($this->main_countries) <= 0) {
+    $this->openpage("Title");
+    $data = json_decode($this->page["Title"],true);
+    $jkey = "countries";
+    if (!array_key_exists($jkey, $data)) {
+      echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
+      return FALSE;
+    }
+    $countries_info = $data[$jkey];
+    foreach ($countries_info as $country_info) {
+      if ($this->main_countries == "") $this->main_countries = array();
+      array_push($this->main_countries, $country_info);
+    }
+  }
+  return $this->main_countries;
 }
 
 /** Get image file
@@ -557,12 +605,12 @@ function image() {
       return FALSE;
     }
     $image_urls = $data[$jkey];
-    if (array_key_exists("medium", $image_urls)) {
-      $url = $image_urls["medium"];
+    if (array_key_exists("large", $image_urls)) {
+      $url = $image_urls["large"];
       $this->main_image = stripslashes($url);
     }
-    else if (array_key_exists("large", $image_urls)) {
-      $url = $image_urls["large"];
+    else if (array_key_exists("medium", $image_urls)) {
+      $url = $image_urls["medium"];
       $this->main_image = stripslashes($url);
     }
     else if (array_key_exists("small", $image_urls)) {
@@ -583,7 +631,7 @@ function image() {
 */
 function image_url() {
   $path = $this->photodir."/".$this->doubanID.".jpg";
-  if(fopen($this->main_imageurl,"r")) return $path;
+  if(file_exists($path)) return $path;
   if ($this->savephoto($path)) return $path;
   return FALSE;
 }
@@ -602,6 +650,8 @@ function summary() {
       return FALSE;
     }
     $this->main_summary = $data[$jkey];
+    // delete Douban Tag
+    $this->main_summary = preg_replace("/\©豆瓣/i", "", $this->main_summary);
   }
   return $this->main_summary;
 }
@@ -630,7 +680,8 @@ function savephoto ($path) {
   $response = $req->send();
   if (strpos($response->getHeader("Content-Type"),'image/jpeg') === 0
   || strpos($response->getHeader("Content-Type"),'image/gif') === 0
-  || strpos($response->getHeader("Content-Type"), 'image/bmp') === 0 ){
+  || strpos($response->getHeader("Content-Type"),'image/bmp') === 0
+  || strpos($response->getHeader("Content-Type"),'image/webp') === 0 ){
     $fp = $response->getBody();
   }else{
     echo "<BR>*photoerror* ".$photo_url.": Content Type is '".$req->getResponseHeader("Content-Type")."'<BR>";

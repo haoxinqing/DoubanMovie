@@ -75,10 +75,10 @@ class douban_config {
     $this->imageext = '.jpg';
     // images are stored here after calling photo_localurl()
     // this needs to be under documentroot to be able to display them on your pages.
-    $this->photodir = './douban/images/';
+    $this->photodir = './douban/images';
     // this is the URL to the images, i.e. start at your servers DOCUMENT_ROOT
     // when specifying absolute path
-    $this->photoroot = './douban/images/';
+    $this->photoroot = './douban/images';
     // TWEAKING OPTIONS:
     // limit the result set to X movies (0 to disable, comment out to use default of 20)
     $this->maxresults = 5000;

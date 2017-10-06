@@ -41,6 +41,20 @@ class douban extends douban_config {
   var $main_summary = "";
   var $main_doubanlink = "";
 
+  var $main_wishes = "";  // the number of people wish to see this movie
+  var $main_collect = ""; // the number of people have seen this movie
+  var $main_mobileurl = "";
+  var $main_subtype = ""; // movie or tv
+
+  // Extra information
+  var $main_writer = "";
+  var $main_writers = "";
+  var $main_pubdate = "";
+  var $main_language = "";
+  var $main_languages = "";
+  var $main_durations = "";
+  var $main_imdbid = "";
+
   var $info_excer;
 
   var $extension = array('Title');
@@ -106,7 +120,7 @@ class douban extends douban_config {
   * @method openpage
   * @param string wt
   */
-  function openpage ($wt) {
+  function openpage ($wt = "Title") {
     if (strlen($this->doubanID) < 7) {
       echo "Invalid doubanID: ".$this->doubanID."<BR>".strlen($this->doubanID);
       $this->page[$wt] = "cannot open page";
@@ -145,6 +159,7 @@ class douban extends douban_config {
 
 
   $url = $this->main_url();//url为当前Douban完整连接
+  if ($wt == "Extra") $url = $this->doubanlink();
   $curl = curl_init();//初始化一个CURL会话，cURL库可以简单和有效地去抓网页
   curl_setopt($curl, CURLOPT_URL,$url);//为CURL会话设置参数，CURLOPT_URL为$url
   curl_setopt($curl, CURLOPT_HEADER, 0);//CURLOPT_HEADER$url
@@ -221,6 +236,20 @@ function setid ($id) {
   $this->main_image = "";
   $this->main_summary = "";
   $this->main_doubanlink = "";
+
+  $this->main_wishes = "";
+  $this->main_collect = "";
+  $this->main_mobileurl = "";
+  $this->main_subtype = "";
+
+  // Extra information
+  $this->main_writer = "";
+  $this->main_writers = array();
+  $this->main_pubdate = "";
+  $this->main_language = "";
+  $this->main_languages = array();
+  $this->main_durations = "";
+  $this->main_imdbid = "";
 
   $this->info_excer = new info_extractor();
 }
@@ -698,6 +727,225 @@ function savephoto ($path) {
   fclose($fp2);
   return TRUE;
 }
+
+/** Get wishes count
+* @method wishes
+* @return string wish to see people count
+*/
+function wishes() {
+  if ($this->main_wishes == "") {
+    $this->openpage("Title");
+    $data = json_decode($this->page["Title"],true);
+    $jkey = "wish_count";
+    if (!array_key_exists($jkey, $data)) {
+      echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
+      return FALSE;
+    }
+    $this->main_wishes = $data[$jkey];
+  }
+  return $this->main_wishes;
+}
+
+/** Get collect count
+* @method collect
+* @return string having seen people count
+*/
+function collect() {
+  if ($this->main_collect == "") {
+    $this->openpage("Title");
+    $data = json_decode($this->page["Title"],true);
+    $jkey = "collect_count";
+    if (!array_key_exists($jkey, $data)) {
+      echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
+      return FALSE;
+    }
+    $this->main_collect = $data[$jkey];
+  }
+  return $this->main_collect;
+}
+
+/** Get mobile url
+* @method mobileurl
+* @return string mobile url
+*/
+function mobileurl() {
+  if ($this->main_mobileurl == "") {
+    $this->openpage("Title");
+    $data = json_decode($this->page["Title"],true);
+    $jkey = "mobile_url";
+    if (!array_key_exists($jkey, $data)) {
+      echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
+      return FALSE;
+    }
+    $this->main_mobileurl = $data[$jkey];
+  }
+  return $this->main_mobileurl;
+}
+
+/** Get subtype
+* @method subtype
+* @return string subtype
+*/
+function subtype() {
+  if ($this->main_subtype == "") {
+    $this->openpage("Title");
+    $data = json_decode($this->page["Title"],true);
+    $jkey = "subtype";
+    if (!array_key_exists($jkey, $data)) {
+      echo "<br /> JSON Parser Error: json key '".$jkey."' does not exist. <br />";
+      return FALSE;
+    }
+    $this->main_subtype = $data[$jkey];
+  }
+  return $this->main_subtype;
+}
+
+/** Get writer
+* @method writer
+* @return string writer
+*/
+function writer() {
+  if ($this->main_writer == "") {
+    $this->writers();
+    foreach ($this->main_writers as $writer_name) {
+      if ($this->main_writer == "") $this->main_writer = $writer_name;
+      else $this->main_writer = $this->main_writer." / ".$writer_name;
+    }
+  }
+  return $this->main_writer;
+}
+
+/** Get writers
+* @method writers
+* @return string writers array
+*/
+function writers() {
+  if ($this->main_writers == "" || count($this->main_writers) <= 0) {
+    $this->openpage("Extra");
+    $data = $this->page["Extra"];
+    $match_patt = "/\<span \>\<span class='pl'\>编剧\<\/span\>: \<span class='attrs'\>(.*?)\<\/span\>\<\/span\>\<br\/\>/sim";
+    preg_match($match_patt,$data,$zh_CN);
+    if ($zh_CN == "" || count($zh_CN) <= 0) return FALSE;
+    $match_cases = explode(" / ",$zh_CN[1]);
+    foreach($match_cases as $match_case) {
+      if ($this->main_writers == "") $this->main_writers = array();
+      array_push($this->main_writers, trim(strip_tags($match_case)));
+    }
+  }
+  return $this->main_writers;
+}
+
+/** Get language
+* @method language
+* @return string language
+*/
+function language() {
+  if ($this->main_language == "") {
+    $this->languages();
+    foreach ($this->main_languages as $language_name) {
+      if ($this->main_language == "") $this->main_language = $language_name;
+      else $this->main_language = $this->main_language." / ".$language_name;
+    }
+  }
+  return $this->main_language;
+}
+
+/** Get languages
+* @method languages
+* @return string languages array
+*/
+function languages() {
+  if ($this->main_languages == "" || count($this->main_languages) <= 0) {
+    $this->openpage("Extra");
+    $data = $this->page["Extra"];
+    $match_patt = "/\<span class=\"pl\"\>语言:\<\/span\>(.*?)\<br\/\>/sim";
+    preg_match($match_patt,$data,$zh_CN);
+    if ($zh_CN == "" || count($zh_CN) <= 0) return FALSE;
+    $match_cases = explode(" / ",$zh_CN[1]);
+    foreach($match_cases as $match_case) {
+      if ($this->main_languages == "") $this->main_languages = array();
+      array_push($this->main_languages, trim(strip_tags($match_case)));
+    }
+  }
+  return $this->main_languages;
+}
+
+/** Get pubdate
+* @method pubdate
+* @return string pubdate
+*/
+function pubdate() {
+  if ($this->main_pubdate == "") {
+    $this->openpage("Extra");
+    $data = $this->page["Extra"];
+    $match_patt1 = "/\<span class=\"pl\"\>上映日期:\<\/span\>(.*?)\<br\/\>/sim";
+    $match_patt2 = "/\<span class=\"pl\"\>首播:\<\/span\>(.*?)\<br\/\>/sim";
+    preg_match($match_patt1,$data,$zh_CN);
+    if ($zh_CN != "" && count($zh_CN) > 0) {
+      $match_cases = explode(" / ",$zh_CN[1]);
+      foreach($match_cases as $match_case) {
+        if ($this->main_pubdate == "") $this->main_pubdate = trim(strip_tags($match_case));
+        else {
+          $this->main_pubdate = $this->main_pubdate.", ".trim(strip_tags($match_case));
+        }
+      }
+    }
+    else {
+      preg_match($match_patt2,$data,$zh_CN);
+      if ($zh_CN == "" || count($zh_CN) <= 0) return FALSE;
+      $match_cases = explode(" / ",$zh_CN[1]);
+      foreach($match_cases as $match_case) {
+        if ($this->main_pubdate == "") $this->main_pubdate = trim(strip_tags($match_case));
+        else {
+          $this->main_pubdate = $this->main_pubdate.", ".trim(strip_tags($match_case));
+        }
+      }
+    }
+  }
+  return $this->main_pubdate;
+}
+
+/** Get durations
+* @method durations
+* @return string durations
+*/
+function durations() {
+  if ($this->main_durations == "") {
+    $this->openpage("Extra");
+    $data = $this->page["Extra"];
+    $match_patt1 = "/\<span class=\"pl\"\>片长:\<\/span\>(.*?)\<br\/\>/sim";
+    $match_patt2 = "/\<span class=\"pl\"\>单集片长:\<\/span\>(.*?)\<br\/\>/sim";
+    preg_match($match_patt1,$data,$zh_CN);
+    if ($zh_CN != "" && count($zh_CN) > 0) {
+      $this->main_durations = trim($zh_CN[1]);
+    }
+    else {
+      preg_match($match_patt2,$data,$zh_CN);
+      if ($zh_CN == "" || count($zh_CN) <= 0) return FALSE;
+      $this->main_durations = trim($zh_CN[1]);
+    }
+  }
+  return $this->main_durations;
+}
+
+/** Get imdbid
+* @method imdbid
+* @return string imdbid
+*/
+function imdbid() {
+  if ($this->main_imdbid == "") {
+    $this->openpage("Extra");
+    $data = $this->page["Extra"];
+    $match_patt = "/\<span class=\"pl\"\>IMDb链接:\<\/span\>(.*?)\<br\>/sim";
+    preg_match($match_patt,$data,$zh_CN);
+    if ($zh_CN == "" || count($zh_CN) <= 0) return FALSE;
+    $temp = trim(strip_tags($zh_CN[1]));
+    if (strpos("x".$temp,"tt") != FALSE) $temp = substr($temp, 2 );
+    $this->main_imdbid = $temp;
+  }
+  return $this->main_imdbid;
+}
+
 }
 
 ?>

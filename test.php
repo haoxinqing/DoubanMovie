@@ -19,6 +19,16 @@ if(isset($_GET)) {
     $movie_summary = $instance->summary();
     $movie_image = $instance->image_url();
     $movie_doubanlink = $instance->doubanlink();
+    $movie_wishnum = $instance->wishes();
+    $movie_collectnum = $instance->collect();
+    $movie_mobileurl = $instance->mobileurl();
+    $movie_subtype = $instance->subtype();
+
+    $movie_writer = $instance->writer();
+    $movie_pubdate = $instance->pubdate();
+    $movie_language = $instance->language();
+    $movie_duration = $instance->durations();
+    $movie_imdbid = $instance->imdbid();
   }
 }
 
@@ -73,6 +83,9 @@ EOT;
     if (isset($movie_director) && $movie_director != "" && $movie_director != FALSE) {
       echo '<tr><td width="15%">导  演：</td><td>'.$movie_director.'</td></tr>';
     }
+    if (isset($movie_writer) && $movie_writer != "" && $movie_writer != FALSE) {
+      echo '<tr><td width="15%">编  剧：</td><td>'.$movie_writer.'</td></tr>';
+    }
     if (isset($movie_cast) && $movie_cast != "" && $movie_cast != FALSE) {
       echo '<tr><td width="15%">主  演：</td><td>'.$movie_cast.'</td></tr>';
     }
@@ -83,14 +96,35 @@ EOT;
     if (isset($movie_votes) && $movie_votes != "" && $movie_votes != FALSE) {
       echo '<tr><td width="15%">参评人数：</td><td>'.$movie_votes.'</td></tr>';
     }
+    if (isset($movie_wishnum) && $movie_wishnum != "" && $movie_wishnum != FALSE) {
+      echo '<tr><td width="15%">想看人数：</td><td>'.$movie_wishnum.'</td></tr>';
+    }
+    if (isset($movie_collectnum) && $movie_collectnum != "" && $movie_collectnum != FALSE) {
+      echo '<tr><td width="15%">看过人数：</td><td>'.$movie_collectnum.'</td></tr>';
+    }
     if (isset($movie_genre) && $movie_genre != "" && $movie_genre != FALSE) {
       echo '<tr><td width="15%">类  型：</td><td>'.$movie_genre.'</td></tr>';
+    }
+    if (isset($movie_subtype) && $movie_subtype != "" && $movie_subtype != FALSE) {
+      echo '<tr><td width="15%">分  类：</td><td>'.$movie_subtype.'</td></tr>';
+    }
+    if (isset($movie_duration) && $movie_duration != "" && $movie_duration != FALSE) {
+      echo '<tr><td width="15%">片  长：</td><td>'.$movie_duration.'</td></tr>';
+    }
+    if (isset($movie_language) && $movie_language != "" && $movie_language != FALSE) {
+      echo '<tr><td width="15%">语  言：</td><td>'.$movie_language.'</td></tr>';
     }
     if (isset($movie_country) && $movie_country != "" && $movie_country != FALSE) {
       echo '<tr><td width="15%">制片国家：</td><td>'.$movie_country.'</td></tr>';
     }
     if (isset($movie_doubanlink) && $movie_doubanlink != "" && $movie_doubanlink != FALSE) {
       echo '<tr><td width="15%">豆瓣链接：</td><td>'.$movie_doubanlink.'</td></tr>';
+    }
+    if (isset($movie_mobileurl) && $movie_mobileurl != "" && $movie_mobileurl != FALSE) {
+      echo '<tr><td width="15%">移动链接：</td><td>'.$movie_mobileurl.'</td></tr>';
+    }
+    if (isset($movie_imdbid) && $movie_imdbid != "" && $movie_imdbid != FALSE) {
+      echo '<tr><td width="15%">IMDb链接：</td><td>http://www.imdb.com/title/tt'.$movie_imdbid.'</td></tr>';
     }
     if (isset($movie_summary) && $movie_summary != "" && $movie_summary != FALSE) {
       echo '<tr><td width="15%">剧情简介：</td><td>'.$movie_summary.'</td></tr>';
